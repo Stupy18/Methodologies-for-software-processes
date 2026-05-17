@@ -1,0 +1,12 @@
+function foo(x: Int): Int
+{ 
+  x <= 0 ? 1 : foo(x - 2) + 3 
+}
+
+method client(r: Int)
+{
+  var s: Int := foo(r)
+  var t: Int := foo(s)
+
+  assert 2 <= t - s // should verify
+}

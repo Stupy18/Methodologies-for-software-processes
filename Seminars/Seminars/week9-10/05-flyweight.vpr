@@ -1,0 +1,11 @@
+// Flyweight
+field val: Int
+
+// Factory
+field cache: Ref
+
+predicate factory(this: Ref)
+
+method get(this: Ref) returns (fly: Ref)
+    requires factory(this)
+    ensures  factory(this)

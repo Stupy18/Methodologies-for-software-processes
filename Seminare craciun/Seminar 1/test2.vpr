@@ -1,0 +1,21 @@
+method max(x: Int, y: Int) returns (r: Int)
+    ensures r >= x
+    ensures r >= y
+    // The reason Viper says this is "correct" is that 
+    // we haven't told Viper what a "Maximum" actually is. We only told 
+    // it that the result must be "at least as big as the inputs."
+
+    // To force the code to be the actual maximum, you would need to add a third postcondition:
+    // ensures r == x || r == y
+{
+    r := x + y
+    
+    if (x > y)
+    {
+        r := x + 100
+    }
+    else
+    {
+        r := y + 100
+    }
+}

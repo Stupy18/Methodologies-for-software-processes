@@ -1,0 +1,41 @@
+field next: Ref
+
+predicate lseg(this: Ref, last: Ref) {
+    this != last ==> acc(this.next) && lseg(this.next, last)
+}
+
+// a. list predicate
+predicate list(this: Ref) {
+    acc(this.next) && lseg(this.next, this)
+}
+
+// b. create method
+method create() returns (res: Ref)
+    ensures list(res)
+{
+    inhale acc(res.next)
+    res.next := res
+    
+    // Explicitly create the empty list segment box.
+    // Viper checks the lseg blueprint, sees res.next == res, 
+    // realizes it requires 0 permissions, and successfully hands you the box.
+    fold lseg(res.next, res) 
+    
+    // Now you have both acc(res.next) AND lseg(res.next, res). 
+    // The fold will succeed
+    fold list(res)
+}
+
+// c. insert method
+method insert(this: Ref)
+    requires list(this)
+    ensures list(this)
+{
+    unfold list(this)
+    var n: Ref
+    inhale acc(n.next)
+    n.next := this.next
+    this.next := n
+    fold lseg(n, this)
+    fold list(this)
+}

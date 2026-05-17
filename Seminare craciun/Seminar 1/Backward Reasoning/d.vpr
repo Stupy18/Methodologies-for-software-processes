@@ -1,0 +1,36 @@
+method d(x: Int) returns (y: Int)
+  requires x < 17 ==> x <= 3
+  ensures y % 2 == 0 {
+    
+    // Merging the outer block:
+    // (x < 17 ==> x <= 3) && (x >= 17 ==> true)
+    // second half is always true
+    // all we are left is the first half: x < 17 ==> x <= 3
+
+    if (x < 17)
+    {
+        // Merging the inner block:
+        // (Condition ==> WP1tt) && (!Condition ==> WP1tf)
+        // (x > 3 ==> false) && (x <= 3 ==> true)
+        // x > 3 ==> false, so x > 3 cannot happen -> simplifies to !(x > 3) = x <= 3
+        // so WPinner = x <= 3
+
+
+        if (x > 3) {
+            y := 1
+            // WP1tt = (1 % 2 == 0) false
+        } else {
+            y := 2
+            // WP1tf = (2 % 2 == 0) true
+        }
+    }
+    else
+    {
+        y := 6
+        // WP1 = (y % 2 == 0)
+        // WP1f = (6 % 2 == 0) true
+    }
+  
+}
+
+// WP1 = (y % 2 = 0)

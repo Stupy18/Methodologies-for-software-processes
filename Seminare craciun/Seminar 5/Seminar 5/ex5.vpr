@@ -1,0 +1,25 @@
+// method alias(a: Ref, b: Ref)
+//   // If a and b are the same, just ask for a.f. 
+//   // Otherwise, ask for both distinct permissions.
+//   requires a == b ? acc(a.f) : (acc(a.f) && acc(b.f))
+// {
+//   a.f := 5
+//   b.f := 7
+//   assert a.f == 5
+// }
+
+// Verification will fail
+
+/*
+Because we changed the precondition to allow aliasing, the Viper verifier is now forced to check if the body of the method is safe for both scenarios:
+
+Scenario A (a != b): Non-aliasing. a.f becomes 5. b.f becomes 7. Because they are separate objects, writing to b does not affect a. The assertion a.f == 5 is true.
+
+Scenario B (a == b): Aliasing. a and b are exactly the same reference.
+
+First, a.f := 5 sets the field to 5.
+
+Next, b.f := 7 sets the field to 7. But since b is a, this completely overwrites the 5!
+
+Finally, the verifier hits assert a.f == 5. Because the field was just overwritten with 7, the assertion evaluates to 7 == 5, which is false.
+*/

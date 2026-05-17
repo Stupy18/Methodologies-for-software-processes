@@ -1,0 +1,23 @@
+method c() {
+    var x: Int
+    var y: Int
+
+    assume (y > 5 ==> x > 7) && (y <= 5 ==> y - x > 7)
+
+    // Now, to find the weakest precondition for if/else block, use this:
+    // (Condition ==> WPtrue) && (!Condition ==> WPfalse)
+    // So the result is: 
+    // (y > 5 ==> x > 7) && (y <= 5 ==> y - x > 7)
+
+    if (y > 5) {
+        y := x - y
+        // there are no occurences of y in our current goal, so the condition remains the same
+        // WP1t = (x > 7)
+    } else {
+        x := y - x
+        // WP1f = (y - x > 7)
+    }
+
+    assert x > 7
+    // WP1 = (x > 7)
+}

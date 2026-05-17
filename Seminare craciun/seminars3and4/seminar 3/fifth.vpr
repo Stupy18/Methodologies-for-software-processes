@@ -1,0 +1,23 @@
+method square(n: Int) returns (res: Int)
+    requires n >= 0
+    ensures res == n * n
+{
+    res := 0
+    var i: Int := 0
+    while (i < n)
+        invariant i >= 0
+        invariant i <= n
+        invariant res == i * n
+    {
+        var j: Int := 0
+        while (j < n)
+            invariant j >= 0
+            invariant j <= n
+            invariant res == i * n + j
+        {
+            res := res + 1
+            j := j + 1
+        }
+        i := i + 1
+    }
+}

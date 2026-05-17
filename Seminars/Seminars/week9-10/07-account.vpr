@@ -1,0 +1,20 @@
+field bal: Int
+
+
+method client()
+{
+  var x: Ref
+  var y: Ref
+  var z: Ref
+  x := create()
+  y := create()
+  z := create()
+  deposit(x, 100)
+  deposit(y, 200)
+  deposit(z, 300)
+  transfer(x, y, 100)
+  assert x.bal == 0
+  assert y.bal == 300
+  assert z.bal == 300
+}
+

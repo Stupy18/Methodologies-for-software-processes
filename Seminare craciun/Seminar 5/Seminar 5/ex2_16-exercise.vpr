@@ -1,0 +1,26 @@
+function foo(x: Int): Int {
+    x <= 0 ? 1 : foo(x - 2) + 3 
+}
+
+// In Viper, lemmas are declared by using the 'method' keyword
+method foo_properties(x: Int)
+    ensures foo(x) >= 1 // this is pretty logical
+
+    ensures x >= 1 ==> foo(x) >= x + 2 // ?
+{
+    if (x > 0) {
+        foo_properties(x - 2)
+    }
+}
+
+method client(r: Int)
+{
+    var s: Int := foo(r)
+    foo_properties(r)
+    
+    var t: Int := foo(s)
+    foo_properties(s)
+    
+    //assert 2 <= t - s
+    assert 2 <= t - r
+}

@@ -1,0 +1,56 @@
+// my very own multiplication function 
+function X(n: Int, m: Int): Int 
+  requires n >= 0 && m >= 0
+{
+  m == 0 ? 0 : n + X(n, m-1)
+}
+
+// helper lemma 1
+// teaches the solver that X(0, n) is always 0
+method lemma_zero(n: Int)
+  requires n >=0
+  ensures X(0, n) == 0
+{
+  if (n > 0)
+  {
+    lemma_zero(n - 1) // Inductive proof for n
+    // "Assume the ensures clause is already proven true for n - 1."
+  }
+}
+
+// helper lemma 2
+// teaches the solver how to increment the first parameter
+method lemma_step(n: Int, m: Int)
+  requires n >= 0 && m >= 0
+  ensures X(n + 1, m) == m + X(n, m)
+{
+  if (m > 0)
+  {
+    lemma_step(n, m - 1)
+    // The solver assumes this is true: X(n + 1, m - 1) == (m - 1) + X(n, m - 1).
+  }
+}
+
+method lemma_X_commutative(n: Int, m: Int)
+  requires n >= 0 && m >= 0
+  ensures X(n, m) == X(m, n)
+{
+  if (m == 0)
+  {
+    // base case: X(n, 0) == X(0, n)
+    // the solver knows X(n, 0) == 0, so just prove X(0, n) == 0
+    lemma_zero(n)
+  }
+  else
+  {
+    // Assume it holds for m - 1 (inductive step)
+    lemma_X_commutative(n, m - 1)
+
+    // Here, the solver managed to reduce the problem to:
+    // X(n, m) == n + X(m-1, n)
+
+    // Apply helper lemma 2, pass m - 1 as the first argument
+    // because it tells the solver that n + X(m - 1, n) == X(m, n)
+    lemma_step(m - 1, n)
+  }
+}

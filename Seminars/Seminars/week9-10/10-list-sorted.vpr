@@ -1,0 +1,6 @@
+field next: Ref
+field elem: Int
+
+
+predicate list(this: Ref)
+

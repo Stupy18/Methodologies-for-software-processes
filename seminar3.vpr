@@ -1,0 +1,195 @@
+method main_07() {
+  var M: Int
+  var N: Int
+  var res: Int
+
+  assume N > 0 && M >= 0
+
+  var m: Int := M
+  res := 0
+
+  // What does this loop do?
+  // Each iteration: subtracts N from m, increments res.
+  // → it counts how many times N fits into M.
+  // → at every point: M = res * N + m  (like long division)
+  //
+  // HOW TO FIND IT:
+  //   Before loop: m = M, res = 0  →  0*N + M = M  ✓
+  //   After 1 iter: m = M-N, res = 1  →  1*N + (M-N) = M  ✓
+  //   After k iters: m = M-k*N, res = k  →  k*N + (M-k*N) = M  ✓
+  //   The relationship M = res*N + m NEVER changes → that's our invariant!
+
+  while (m >= N)
+    invariant M == res * N + m   // algebraic identity: always true
+    invariant m >= 0             // m never goes negative (we only subtract N when m >= N)
+  {
+    m := m - N
+    res := res + 1
+  }
+
+  // At exit: m < N (loop condition negated) AND M == res*N + m AND m >= 0
+  // → exactly what the assert needs
+  assert M == res * N + m
+}
+
+method main_08() {
+  var n: Int
+  var m: Int
+  var res: Int
+
+  assume n >= 0 && m >= 0
+
+  var x: Int := n
+  var y: Int := m
+  res := 0
+
+  // What does this loop do?
+  // It's binary (Russian peasant) multiplication.
+  // x halves each iter (right shift), y doubles (left shift).
+  // When x is odd, the current y contributes to the result.
+  //
+  // HOW TO FIND IT:
+  //   Key insight: x * y + res stays constant throughout!
+  //   Before loop: x=n, y=m, res=0  →  n*m + 0 = n*m  ✓
+  //
+  //   After one iteration (x odd, so res += y):
+  //     new_res = res + y
+  //     new_x   = x / 2
+  //     new_y   = y * 2
+  //   new_x * new_y + new_res
+  //     = (x/2)*(2y) + (res+y)
+  //     = (x - x%2)*y + res + y       [since (x/2)*2 = x - x%2 for x odd: x%2=1]
+  //     = x*y - y + res + y
+  //     = x*y + res  ✓
+  //
+  //   After one iteration (x even, res unchanged):
+  //     (x/2)*(2y) + res = (x - 0)*y + res = x*y + res  ✓
+  //
+  //   Invariant: res + x * y == n * m
+
+  while (x > 0)
+    invariant res + x * y == n * m   // product decomposition — always n*m total
+    invariant x >= 0                  // x halves but never goes below 0
+  {
+    if (x % 2 == 1) {
+      res := res + y
+    }
+    x := x / 2
+    y := y * 2
+  }
+
+  // At exit: x = 0 (x > 0 negated, and x >= 0 from invariant)
+  // invariant: res + 0 * y = res = n * m  ✓
+  assert res == n * m
+}
+
+method int_sqrt() {
+  var n: Int
+  assume n >= 0
+  var res: Int
+  res := 0
+
+  // Loop condition: (res+1)^2 < n  → keep incrementing res
+  // We exit when (res+1)^2 >= n
+  //
+  // HOW TO FIND IT:
+  //   We need: res*res <= n  (lower bound on the floor sqrt)
+  //   Initially: res=0 → 0*0=0 <= n  ✓  (n >= 0)
+  //   During loop: condition says (res+1)^2 < n
+  //     → after res:=res+1:  new_res^2 = old_(res+1)^2 < n  ✓
+  //   At exit: (res+1)^2 >= n  AND  res^2 <= n  → postcondition holds!
+
+  while ((res + 1) * (res + 1) < n)
+    invariant res * res <= n   // res^2 never exceeds n
+    invariant n >= 0           // n is unchanged and non-negative
+  {
+    res := res + 1
+  }
+
+  // At exit:
+  //   (res+1)*(res+1) >= n   [loop condition negated]
+  //   res*res <= n            [invariant]
+  // → both parts of the postcondition hold
+  assert res * res <= n && n <= (res + 1) * (res + 1)
+}
+
+method int_sqrt_fast() {
+  var n: Int
+  assume n >= 0
+  var res: Int
+  res := 0
+  var x: Int := 1   // x = (res+1)^2 = 1 initially
+
+  // Why start with x = 1?
+  // The trick: instead of recomputing (res+1)^2 from scratch each time,
+  // we maintain x = (res+1)^2 incrementally.
+  //
+  // HOW TO FIND IT:
+  //   x = (res+1)^2 is the hidden invariant!
+  //
+  //   After body:
+  //     x' = x + 2*res + 3
+  //        = (res+1)^2 + 2*res + 3
+  //        = res^2 + 2*res + 1 + 2*res + 3
+  //        = res^2 + 4*res + 4
+  //        = (res+2)^2
+  //        = (new_res + 1)^2  ✓  (since new_res = res+1)
+  //
+  //   We also need res^2 <= n to prove the postcondition.
+  //   During loop (x < n): (res+1)^2 = x < n
+  //   After res:=res+1: new_res^2 = (res+1)^2 = old_x < n  ✓
+
+  while (x < n)
+    invariant x == (res + 1) * (res + 1)   // x tracks (res+1)^2 exactly
+    invariant res * res <= n               // res^2 never exceeds n
+    invariant n >= 0                       // n unchanged
+  {
+    x := x + 2 * res + 3   // = (res+1)^2 + 2*res + 3 = (res+2)^2
+    res := res + 1
+  }
+
+  // At exit:
+  //   x >= n  [loop condition negated]
+  //   x == (res+1)*(res+1)  [invariant]  →  n <= (res+1)*(res+1)  ✓
+  //   res*res <= n  [invariant]  ✓
+  assert res * res <= n && n <= (res + 1) * (res + 1)
+}
+
+// Strategy: double loop — outer counts rows (0..n), inner counts columns (0..n)
+// Each inner loop adds 1 to res exactly n times → adds n per outer iteration
+// After n outer iterations: res = n * n
+//
+// Code restrictions mean: no x:=y+z, no x:=x*y, no x:=2*x
+// But multiplication IS allowed in invariants/assertions!
+
+method square(n: Int) returns (res: Int)
+  requires n >= 0
+  ensures res == n * n
+{
+  res := 0
+  var i: Int := 0
+
+  while (i < n)
+    // i = number of completed outer iterations
+    // After i complete inner loops: res = i * n
+    invariant 0 <= i && i <= n
+    invariant res == i * n
+  {
+    var j: Int := 0
+
+    while (j < n)
+      // j = number of +1 operations done in this inner loop so far
+      // So res = (i * n already accumulated) + j new additions
+      invariant 0 <= j && j <= n
+      invariant res == i * n + j
+    {
+      res := res + 1   // ✓ allowed: x := x + 1
+      j := j + 1       // ✓ allowed: x := x + 1
+    }
+    // After inner loop: j = n, res = i*n + n
+
+    i := i + 1         // ✓ allowed: x := x + 1
+    // Now: res = i_old*n + n = (i_old+1)*n = i_new*n  ✓
+  }
+  // At exit: i = n, res = n * n  ✓
+}

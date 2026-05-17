@@ -1,0 +1,34 @@
+// Flyweight
+field val: Int
+
+// Factory
+field cache: Ref
+
+predicate factory(this: Ref) {
+    // The factory must own its cache field
+    acc(this.cache) && 
+    // If the cache is full, the factory holds *some* read permission to the flyweight
+    (this.cache != null ==> acc(this.cache.val, wildcard))
+}
+
+method get(this: Ref) returns (fly: Ref)
+    requires factory(this)
+    ensures  factory(this)
+    ensures  acc(fly.val, wildcard) // Grant the caller *some* read permission
+{
+    unfold factory(this)
+    
+    if (this.cache == null) {
+        var newFly: Ref
+        // Simulate creating a new object by "inhaling" full write permission to its field
+        inhale acc(newFly.val) 
+        this.cache := newFly
+    }
+    
+    fly := this.cache
+    
+    // We currently hold read/write permissions to fly.val.
+    // Folding the factory consumes a slice of that permission, leaving us with enough
+    // leftover permission to satisfy the method's `ensures acc(fly.val, _)` clause.
+    fold factory(this)
+}

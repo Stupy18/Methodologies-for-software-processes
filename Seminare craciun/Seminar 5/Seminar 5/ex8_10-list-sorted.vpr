@@ -1,0 +1,11 @@
+field next: Ref
+field elem: Int
+
+predicate list(this: Ref) {
+    this != null ==> 
+        acc(this.elem) && 
+        acc(this.next) && 
+        list(this.next) &&
+        (this.next != null ==> this.elem <= unfolding list(this.next) in this.next.elem)
+        //Temporarily open the list(this.next) box, read the elem field, and then immediately close the box back up.
+}

@@ -1,0 +1,21 @@
+method b() {
+
+    var x: Int
+    var y: Int
+
+    assume x + y > x * y + y * y
+
+    x := x + y
+    // WP1 = (x + y > [x + y] * y)
+
+    y := x * y
+    // WP2 = (x > x * y)
+
+    assert x > y
+    // WP3 = (x > y)
+}
+
+/*
+    WP1 = x + y > [x + y] * y
+        = x + y > xy + y^2
+*/

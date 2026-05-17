@@ -1,0 +1,24 @@
+method main() {
+    var n: Int //5
+    var m: Int //3
+    var res: Int
+
+    assume n >= 0 && m >= 0
+
+    var x: Int := n //5
+    var y: Int := m //3
+    res := 0
+
+    while (x > 0)
+        invariant x >= 0
+        invariant res + x * y == n * m
+    {
+        if (x % 2 == 1) {
+            res := res + y
+        }
+        x := x / 2
+        y := y * 2
+    }
+
+    assert res == n * m
+}

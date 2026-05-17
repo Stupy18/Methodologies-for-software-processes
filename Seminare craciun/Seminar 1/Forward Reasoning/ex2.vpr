@@ -1,0 +1,16 @@
+method b()
+{
+  var x: Int
+  // SP0 = (0 <= x0) && (x0 <= 100)
+  assume 0 <= x && x < 100
+
+  // x1 = 2 * x0
+  // SP1 = (0 <= x0 && x0 <= 100) && (x1 = 2 * x0)
+  x := 2 * x
+
+  // min value: 2 * 0 = 0
+  // max value: 99 * 2 = 198
+  // so the engine deduces that 0 <= x1 <= 198
+  // also, x1 is multiplied by 2, so x1 % 2 = 0
+  assert x >= 0 && x <= 198 && x % 2 == 0
+}

@@ -1,0 +1,384 @@
+// ─────────────────────────────────────────────────────────────────────
+// IMPLEMENTATION 1: Correct max using a conditional
+// ─────────────────────────────────────────────────────────────────────
+method max_correct(x: Int, y: Int) returns (r: Int)
+    ensures r >= x
+    ensures r >= y
+{
+    // Standard if-else: pick the larger value.
+    // If x >= y  →  r = x satisfies: r >= x ✓ and r = x >= y ✓
+    // If x  < y  →  r = y satisfies: r >= y ✓ and r = y > x ✓
+    if (x >= y) {
+        r := x
+    } else {
+        r := y
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// IMPLEMENTATION 2: Does NOT compute the maximum, but still VERIFIES!
+//
+// Key insight: the spec only says r >= x AND r >= y.
+// It never says r == x OR r == y.
+// So returning max(x,y)+1 is mathematically "wrong" but spec-correct.
+// ─────────────────────────────────────────────────────────────────────
+method max_cheat(x: Int, y: Int) returns (r: Int)
+    ensures r >= x
+    ensures r >= y
+{
+    // We return max(x,y) + 1.
+    // Branch x >= y: r = x+1.  r >= x ✓  (x+1 > x).  r >= y ✓  (x >= y → x+1 > y).
+    // Branch y  > x: r = y+1.  r >= y ✓  (y+1 > y).  r >= x ✓  (y > x → y+1 > x).
+    // This is provably NOT the maximum for most inputs, yet Viper accepts it.
+    if (x >= y) {
+        r := x + 1
+    } else {
+        r := y + 1
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// (a) + (c)  Contract + Implementation of maxSum
+//
+// The contract must express THREE things:
+//   1. sum  is exactly x+y
+//   2. max  is at least as large as both x and y  (it IS a maximum)
+//   3. max  is one of the two inputs               (it is TIGHT)
+// ─────────────────────────────────────────────────────────────────────
+method maxSum(x: Int, y: Int) returns (sum: Int, max: Int)
+    ensures sum == x + y          // sum is exactly the arithmetic sum
+    ensures max >= x && max >= y  // max is an upper bound of both inputs
+    ensures max == x || max == y  // max is actually one of the inputs (tight)
+{
+    sum := x + y
+
+    // Pick the larger of the two to satisfy the max postconditions
+    if (x >= y) {
+        max := x
+    } else {
+        max := y
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// (b) Client that calls maxSum on concrete values and tests via assert
+// ─────────────────────────────────────────────────────────────────────
+method testMaxSum()
+{
+    var s: Int
+    var m: Int
+    s, m := maxSum(1723, 42)
+
+    // These assertions follow directly from the ensures clauses above.
+    // Viper can verify them without knowing the implementation.
+    assert s == 1723 + 42   // = 1765
+    assert m >= 1723        // m is the maximum → at least 1723
+    assert m >= 42
+    assert m == 1723 || m == 42  // m must be one of the two
+    // Note: we CANNOT assert m == 1723 alone without the body,
+    // because the contract alone doesn't tell us which branch was taken.
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// (d) Abstract method reconstructMaxSum
+//
+// Given sum and max (the outputs of maxSum), reconstruct x and y.
+// Postcondition mirrors the original maxSum contract "in reverse":
+//   - the returned x and y must add up to sum
+//   - max must still be >= both x and y
+//   - max must equal one of them (it was originally one of the inputs)
+// ─────────────────────────────────────────────────────────────────────
+method reconstructMaxSum_abstract(sum: Int, max: Int) returns (x: Int, y: Int)
+    ensures x + y == sum
+    ensures max >= x && max >= y
+    ensures x == max || y == max
+    // No body → "abstract method". Viper treats this as an axiom.
+
+// ─────────────────────────────────────────────────────────────────────
+// (e) Concrete implementation of reconstructMaxSum
+//
+// Strategy: fix one return value as max, derive the other from sum.
+//   x := max
+//   y := sum - max   (so x + y = max + (sum-max) = sum ✓)
+//
+// For the postcondition max >= y to hold we need:
+//   max >= sum - max  ↔  2*max >= sum
+// This is necessary, so we add it as a PRECONDITION.
+// ─────────────────────────────────────────────────────────────────────
+method reconstructMaxSum(sum: Int, max: Int) returns (x: Int, y: Int)
+    requires sum <= 2 * max      // needed so that y = sum-max <= max
+    ensures x + y == sum         // preserved by construction
+    ensures max >= x && max >= y // x=max ✓; y=sum-max<=max by precondition ✓
+    ensures x == max || y == max // x == max ✓
+{
+    x := max
+    y := sum - max
+    // Verification sketch:
+    //   x + y = max + (sum - max) = sum                         ✓
+    //   max >= x = max                                           ✓ (reflexive)
+    //   max >= y = sum - max  ↔  2*max >= sum  ← precondition   ✓
+    //   x == max                                                 ✓
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// (f) Client that tests the full round-trip
+// ─────────────────────────────────────────────────────────────────────
+method clientRoundTrip()
+{
+    var s: Int
+    var m: Int
+    s, m := maxSum(1723, 42)
+    // From ensures: s = 1765, m = 1723 (or 42), m >= both
+
+    // The precondition of reconstructMaxSum requires s <= 2*m.
+    // From maxSum's contract: m >= 1723 and s = 1765.
+    // 2 * 1723 = 3446 >= 1765 ✓ — Viper can verify this.
+    assert s <= 2 * m   // sanity check (Viper should prove this from the contract)
+
+    var rx: Int
+    var ry: Int
+    rx, ry := reconstructMaxSum(s, m)
+
+    // Now verify the round-trip properties from the ensures clauses:
+    assert rx + ry == s           // sums match
+    assert m >= rx && m >= ry     // max still dominates
+    assert rx == m || ry == m     // one of them is the max
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// (a)  requires 0 <= x && x <= y && y < 100
+//      z := y - x
+//
+// Forward step: substitute z = y - x into the known facts.
+//   z = y - x
+//   x <= y  →  z = y - x >= 0
+//   y < 100, x >= 0  →  z = y - x <= y < 100
+//
+// Strongest postcondition: z == y - x (exact value, references parameters)
+// In terms of range alone:  0 <= z && z < 100
+// ─────────────────────────────────────────────────────────────────────
+method forward_a(x: Int, y: Int) returns (z: Int)
+    requires 0 <= x && x <= y && y < 100
+    ensures  z == y - x   // strongest: pins the exact value
+    // equivalently:  ensures 0 <= z && z < 100
+{
+    z := y - x
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// (b)  assume 0 <= x && x < 100
+//      x := 2 * x
+//
+// Forward step:
+//   old x ∈ [0, 99]
+//   new x = 2 * old_x ∈ [0, 198]
+//   new x is always even (2 * anything)
+//
+// Strongest: 0 <= x && x < 200 && x % 2 == 0
+// ─────────────────────────────────────────────────────────────────────
+method forward_b()
+{
+    var x: Int
+    assume 0 <= x && x < 100
+
+    x := 2 * x
+
+    assert 0 <= x && x < 200 && x % 2 == 0
+    // 0 <= 2*old_x          ✓  (old_x >= 0)
+    // 2*old_x < 200         ✓  (old_x < 100)
+    // (2*old_x) % 2 == 0    ✓  (always even)
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// (c)  assume x > 0 && x < y
+//      x := x + 23
+//      y := y - 3 * x          ← uses the NEW x here!
+//
+// Forward steps:
+//   After x := x+23:   x_new = x_old + 23 > 23  (since x_old > 0)
+//   After y := y - 3*x_new:
+//     y_new = y_old - 3*(x_old+23)
+//     From x_old < y_old and x_old >= 1: y_old >= x_old + 1
+//     → y_new = y_old - 3*x_new  >  (x_new-23) - 3*x_new = -2*x_new - 23
+//
+// The simplest fact we can always assert: x > 23
+// ─────────────────────────────────────────────────────────────────────
+method forward_c()
+{
+    var x: Int
+    var y: Int
+    assume x > 0 && x < y
+
+    x := x + 23
+    y := y - 3 * x
+
+    assert x > 23
+    // x_old > 0  →  x_new = x_old + 23 > 23  ✓
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// (d)  assume x > 0
+//      x := x + 1
+//      if (y) { var z: Int; x := x + z } else { x := 42 }
+//
+// Forward steps:
+//   After x := x+1:  x > 1 (i.e. x >= 2)
+//   In the ELSE branch:  x = 42  (concrete, predictable)
+//   In the  IF branch:  x = (x+1) + z  where z is UNCONSTRAINED (any Int)
+//                       → x can be ANY integer in this branch
+//
+// JOIN of both branches:  (x can be anything) ∨ (x = 42)  =  true
+//
+// Lesson: an if-branch with an unconstrained fresh variable destroys
+// all information. The strongest verifiable assert is just `true`.
+// ─────────────────────────────────────────────────────────────────────
+method forward_d()
+{
+    var x: Int
+    var y: Bool
+    assume x > 0
+
+    x := x + 1
+    if (y) {
+        var z: Int
+        // z is fresh → no constraints on z whatsoever
+        x := x + z
+    } else {
+        x := 42
+    }
+
+    assert true   // only thing we can guarantee after joining both branches
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// (a)  ensures X == y && Y == x
+//      Body: X := y-x ; Y := y-X ; X := Y+X
+//
+// Backward steps (working right-to-left):
+//
+//   Goal after all statements:  X == y  &&  Y == x
+//
+//   Step 3 — undo  X := Y + X  (substitute X ← Y+X):
+//      X = Y + X => (Y + X) = y - x => (y - X) + X = y - x => Y = y - x
+//     (Y + X) == y  &&  Y == x
+//
+//   Step 2 — undo  Y := y - X  (substitute Y ← y-X):
+//     (y - X) + X == y  &&  (y - X) == x
+//     →  y == y  &&  y - X == x
+//     →  X == y - x
+//
+//   Step 1 — undo  X := y - x  (substitute X ← y-x):
+//     (y - x) == y - x
+//     →  true
+//
+// Weakest precondition = true → no requires needed!
+// This is a classic in-place XOR-style arithmetic swap, works for all ints.
+// ─────────────────────────────────────────────────────────────────────
+method backward_a(x: Int, y: Int) returns (X: Int, Y: Int)
+    requires true   // wp = true → no constraint at all
+    ensures  X == y && Y == x
+{
+    X := y - x    // y = y - x => x = 0
+    Y := y - X    // Y = y - (y-x) = x ✓
+    X := Y + X    // X = x + (y-x) = y ✓
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// (b)  assert x > y  (after  x := x+y ; y := x*y)
+//
+// Backward steps:
+//
+//   Goal:  x > y
+//
+//   Undo  y := x * y  (substitute y ← x*y):
+//     x > x * y   i.e.  x(1 - y) > 0
+//
+//   Undo  x := x + y  (substitute x ← x+y):
+//     (x+y)(1 - y) > 0
+//     This is positive when both factors share the same sign:
+//       Case A: x+y > 0  AND  y < 1  (i.e. y <= 0)
+//       Case B: x+y < 0  AND  y > 1  (i.e. y >= 2)
+//
+// Weakest predicate:  (x+y > 0 && y <= 0) || (x+y < 0 && y >= 2)
+// Simplest concrete assume that works:  y == 0 && x > 0
+// ─────────────────────────────────────────────────────────────────────
+method backward_b()
+{
+    var x: Int
+    var y: Int
+
+    // Weakest precondition (full form):
+    assume (x + y > 0 && y <= 0) || (x + y < 0 && y >= 2)
+    // Simplest sufficient assume: y == 0 && x > 0
+    // (If y=0: x+y=x > 0 ✓ and y=0 <= 0 ✓)
+
+    x := x + y
+    y := x * y
+
+    assert x > y
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// (c)  assert x > 7
+//      Body: if (y > 5) { y := x - y } else { x := y - x }
+//
+// Backward reasoning on the if-else:
+//   wp(if cond { S1 } else { S2 }, P)
+//     = (cond → wp(S1,P)) && (¬cond → wp(S2,P))
+//
+//   wp(y := x-y,   x > 7) = x > 7         (y doesn't appear in goal)
+//   wp(x := y-x,   x > 7) = y - x > 7
+//
+//   Combined:
+//     (y > 5  →  x > 7)  &&  (y <= 5  →  y - x > 7)
+//
+// Simplified (removing implications):
+//   (y <= 5 || x > 7)  &&  (y > 5 || y - x > 7)
+// ─────────────────────────────────────────────────────────────────────
+method backward_c()
+{
+    var x: Int
+    var y: Int
+
+    assume (y <= 5 || x > 7) && (y > 5 || y - x > 7)
+    // Reading this:
+    //   - if y > 5 the first conjunct forces x > 7 (so the if-branch is safe)
+    //   - if y <= 5 the second conjunct forces y-x > 7 (so the else-branch is safe)
+
+    if (y > 5) {
+        y := x - y  // x unchanged; assert x > 7 follows from first conjunct
+    } else {
+        x := y - x  // new x = y - old_x; assert (y - old_x) > 7 from second conjunct
+    }
+
+    assert x > 7
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// (d)  ensures y % 2 == 0
+//      Body: nested if-else on x, setting y to 1, 2, or 6
+//
+// Trace each path to see which ones satisfy y % 2 == 0:
+//   Path 1:  x >= 17              → y := 6   → 6 % 2 == 0  ✓
+//   Path 2:  x <  17 && x <= 3   → y := 2   → 2 % 2 == 0  ✓
+//   Path 3:  x <  17 && x >  3   → y := 1   → 1 % 2 == 1  ✗  FAILS!
+//
+// We must EXCLUDE Path 3: NOT (x < 17 && x > 3)
+//   = x >= 17  OR  x <= 3
+//
+// Weakest precondition: x <= 3 || x >= 17
+// ─────────────────────────────────────────────────────────────────────
+method backward_d(x: Int) returns (y: Int)
+    requires x <= 3 || x >= 17   // exclude the "y := 1" path
+    ensures  y % 2 == 0
+{
+    if (x < 17) {
+        if (x > 3) {
+            y := 1   // 1 % 2 != 0 — but the precondition prevents this branch
+        } else {
+            y := 2   // 2 % 2 == 0 ✓
+        }
+    } else {
+        y := 6       // 6 % 2 == 0 ✓
+    }
+}

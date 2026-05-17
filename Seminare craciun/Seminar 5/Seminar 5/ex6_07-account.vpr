@@ -1,0 +1,59 @@
+field bal: Int
+
+// create a new account
+// simulate object creation by returning a reference and granting the caller full permissions to the fields
+// + initial balance of 0
+// postconditions: give the caller access and guarantee balance of 0
+method create() returns (res: Ref)
+  ensures acc(res.bal)
+  ensures res.bal == 0
+{
+  // inhale permission
+  inhale acc(res.bal)
+  res.bal := 0
+}
+
+
+// preconditions: needs acc(a.bal) and the amount >= 0
+// postconditions: give the permission back to the caller + new bal = old bal + amount
+method deposit(a: Ref, amount: Int)
+  requires acc(a.bal)
+  requires amount >= 0
+  ensures acc(a.bal)
+  ensures a.bal == old(a.bal) + amount
+{
+  a.bal := a.bal + amount
+}
+
+// transfer
+// pre: permission to both accounts, amount >= 0
+// post: returns both permissions and updates both balances
+method transfer(from: Ref, to: Ref, amount: Int)
+  // Requesting both permissions with && ensures they do not alias
+  requires acc(from.bal) && acc(to.bal)
+  requires amount >= 0
+  ensures acc(from.bal) && acc(to.bal)
+  ensures from.bal == old(from.bal) - amount
+  ensures to.bal == old(to.bal) + amount
+{
+  from.bal := from.bal - amount
+  to.bal := to.bal + amount
+}
+
+method client()
+{
+  var x: Ref
+  var y: Ref
+  var z: Ref
+  x := create()
+  y := create()
+  z := create()
+  deposit(x, 100)
+  deposit(y, 200)
+  deposit(z, 300)
+  transfer(x, y, 100)
+  assert x.bal == 0
+  assert y.bal == 300
+  assert z.bal == 300
+}
+

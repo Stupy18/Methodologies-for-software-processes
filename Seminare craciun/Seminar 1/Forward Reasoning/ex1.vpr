@@ -1,0 +1,8 @@
+method a(x: Int, y: Int) returns (z: Int)
+  requires 0 <= x && x <= y && y < 100
+  ensures z >= 0 && z < 100
+{   
+    // SPf = (x >= 0) && (x <= y) && (y < 100)
+    // so the max value for z is 99 (x = 0, y = 99) and min val is 0 (x = y = 99)
+    z := y - x
+}

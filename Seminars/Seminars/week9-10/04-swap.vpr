@@ -1,0 +1,15 @@
+field f: Int
+
+method swap(a: Ref, b: Ref)
+{
+}
+
+method client1()
+{
+
+}
+
+method client2()
+{
+
+}

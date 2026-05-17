@@ -1,0 +1,55 @@
+method maxSum(x: Int, y: Int) returns (sum: Int, max: Int)
+  ensures sum == x + y
+  // this is to prevent the overachiever bug
+  ensures max >= x && max >= y
+  ensures max == x || max == y
+{
+  sum := x + y
+
+  if (x > y)
+  {
+    max := x
+  }
+  else
+  {
+    max := y
+  }
+}
+
+method testMaxSum()
+{
+  var s: Int
+  var m: Int
+  s, m := maxSum(1723, 42)
+  assert s == 1765
+  assert m == 1723
+}
+// because the contract is extremely precise, we don't need to modify it
+// so a test method can be ran on an unimplemented method
+// we just needed a solid contract...
+
+// Implementation for d, e and f
+
+method reconstructMaxSum(sum: Int, max: Int) returns (x: Int, y: Int)
+  ensures (x == max && y == sum - max) || (y == max && x == sum - max)
+{
+  x := max
+  y := sum - max
+}
+
+method testReconstructMaxSum()
+{
+  var s: Int
+  var m: Int
+
+  // Get the sum and max
+  s, m := maxSum(10, 20)
+
+  // Reconstruct
+  var x_rec: Int
+  var y_rec: Int
+  x_rec, y_rec := reconstructMaxSum(s, m)
+
+  // Test
+  assert (x_rec == 10 && y_rec == 20) || (x_rec == 20 && y_rec == 10)
+}

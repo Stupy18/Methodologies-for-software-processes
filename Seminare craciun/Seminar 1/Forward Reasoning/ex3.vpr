@@ -1,0 +1,27 @@
+method c() 
+{
+    var x: Int
+    var y: Int
+
+    // SP0 = (x > 0) && (x < y)
+    assume x > 0 && x < y
+
+    // SP1 = (x > 0) && (x < y) && (x1 = x + 23) && (y1 = y - 3 * x)
+    x := x + 23
+    y := y - 3 * x
+
+    // Rearrange our variables
+    /*
+        x = x1 - 23
+        y = y1 + 3 * x
+
+        Now substitute these into the original assume statement boundaries:
+
+        b1 (x > 0): x1 - 23 > 0           => x1 > 23
+        b2 (x < y): x1 - 23 < y1 + 3 * x1
+
+                                          => y1 + 2 * x1 > -23 
+    */ 
+
+     assert x > 23 && y + 2 * x > -23
+}

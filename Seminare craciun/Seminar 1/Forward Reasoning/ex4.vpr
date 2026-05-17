@@ -1,0 +1,34 @@
+method d()
+{
+  var x: Int
+  var y: Bool
+
+  // SP0 = (x > 0)
+  assume x > 0
+  
+  // SP1 = (x > 0) && (x1 = x + 1)
+  x := x + 1
+  
+  if (y) {
+    var z: Int
+    x := x + z
+    // SP2a = (x > 0) && (x1 = x + 1) && (y = true) && (x2 = x1 + z)
+  } else {
+    x := 42
+    // SP2b = (x > 0) && (x1 = x + 1) && (y = false) && (x2 = 42)
+  }
+
+  /*
+  Here, there's a catch with z, as it is not stated anywhere
+  what z is/could be, so z can be any integer
+
+  Hence, in the true branch, x can be any known integer, so all mathematical
+  bounds on x are destroyed.
+
+  The final result is: either y is true (and x can be anything) or y is false (and x is 42)
+  */
+
+  assert x == 42 || y
+  // equivalent
+  assert !y ==> x == 42 
+}

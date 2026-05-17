@@ -1,0 +1,11 @@
+field next: Ref
+
+predicate lseg(this: Ref, last: Ref) {
+    this != last ==> acc(this.next) && lseg(this.next, last)
+}
+
+predicate list(this: Ref) // TODO
+
+method create() returns (res: Ref) // TODO
+
+method insert(this: Ref) // TODO
