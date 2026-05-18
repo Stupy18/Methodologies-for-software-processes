@@ -1,66 +1,49 @@
 domain Tree {
     
     // constructors
-    function leaf(value: Int): Tree // <-- base case
-    function node(left: Tree, right: Tree): Tree // composite case
+    function leaf(value: Int): Tree
+    function node(left: Tree, right: Tree): Tree
 
-    // discriminators (is_node is implicit via !is_leaf(t))
-    function is_leaf(t: Tree): Bool 
+    // discriminators
+    function is_leaf(t: Tree): Bool
 
     // destructors
-    function value(t: Tree): Int 
+    function value(t: Tree): Int
     function left(t: Tree): Tree
     function right(t: Tree): Tree
 
-    // auxiliary functions
-    function size(t: Tree): Int
-    function sum(t: Tree): Int
-
     // axioms
     axiom def_is_leaf {
-        forall x: Int :: is_leaf(leaf(x)) 
+        forall x: Int :: is_leaf(leaf(x))
     }
-
     axiom def_not_is_leaf {
-        forall l: Tree, r: Tree :: !is_leaf(node(l,r))
+        forall l: Tree, r: Tree :: !is_leaf(node(l, r))
     }
-
     axiom all_variants {
         forall t: Tree ::
             (is_leaf(t) && exists x: Int :: t == leaf(x))
             || (!is_leaf(t) && exists l: Tree, r: Tree :: t == node(l, r))
     }
-
     axiom value_over_leaf {
         forall x: Int :: value(leaf(x)) == x
     }
-
     axiom left_over_node {
-        forall l: Tree, r: Tree ::
-            left(node(l, r)) == l
+        forall l: Tree, r: Tree :: left(node(l, r)) == l
     }
-
     axiom right_over_node {
-        forall l: Tree, r: Tree ::
-            right(node(l, r)) == r
-    }
-
-    axiom def_size_leaf {
-        forall x: Int :: size(leaf(x)) == 1
-    }
-    axiom def_size_node {
-        forall l: Tree, r: Tree :: size(node(l, r)) == size(l) + size(r)
-    }
-    axiom def_sum_leaf {
-        forall x: Int :: sum(leaf(x)) == x
-    }
-    axiom def_sum_node {
-        forall l: Tree, r: Tree :: sum(node(l, r)) == sum(l) + sum(r)
+        forall l: Tree, r: Tree :: right(node(l, r)) == r
     }
 }
 
+// size is defined OUTSIDE the domain - recursive function with postcondition
+function size(t: Tree): Int
+    ensures result >= 0       // postcondition: size is always non-negative
+{
+    is_leaf(t) ? 1 : size(left(t)) + size(right(t))
+}
+
 method client() {
-    var t: Tree 
+    var t: Tree
     t := node(node(leaf(3), leaf(17)), leaf(22))
     assert size(t) >= 0
 }
