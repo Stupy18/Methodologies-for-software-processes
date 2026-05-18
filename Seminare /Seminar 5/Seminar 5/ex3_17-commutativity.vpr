@@ -37,8 +37,6 @@ method lemma_X_commutative(n: Int, m: Int)
 {
   if (m == 0)
   {
-    // base case: X(n, 0) == X(0, n)
-    // the solver knows X(n, 0) == 0, so just prove X(0, n) == 0
     lemma_zero(n)
   }
   else
@@ -54,3 +52,17 @@ method lemma_X_commutative(n: Int, m: Int)
     lemma_step(m - 1, n)
   }
 }
+
+// A lemma is a helper fact you prove once so you can use it elsewhere
+
+// Lemma 1:  X(0, n) == 0          for all n
+// Lemma 2:  X(n+1, m) == m + X(n, m)   for all n, m
+
+// Goal: X(n, m) == X(m, n)
+//          ↑
+//     needs these facts:
+//          ↓
+//
+// │ lemma_zero:  X(0, n) == 0      │  handles base case m=0
+// │ lemma_step:  X(n+1,m) == m+X(n,m) │  handles inductive step
+// 

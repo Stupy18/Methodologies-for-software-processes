@@ -17,10 +17,3 @@ method a(x: Int, y: Int) returns (X:Int, Y: Int)
 }
 
 // WP3 = (X = y) && (Y = x)
-
-/* 
-    In Backward Reasoning, we reason from the end of the program
-
-    So WP0 is x = x, so true, that is our result
-
-*/

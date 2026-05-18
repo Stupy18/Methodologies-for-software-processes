@@ -1,0 +1,41 @@
+
+// What Is a Loop Invariant?
+// A loop invariant is a property that is true at every iteration 
+// — before the loop, during, and after. It's the key to proving the loop correct.
+method main() {
+    var n: Int //5
+    var m: Int //3
+    var res: Int
+
+    assume n >= 0 && m >= 0
+
+    var x: Int := n 
+    var y: Int := m 
+    res := 0
+
+//     res = 0
+//     x   = n
+//     y   = m
+// ─────────────────────────
+// res + x*y = 0 + n*m = n*m
+
+    while (x > 0)
+        invariant x >= 0
+        invariant res + x * y == n * m
+    {
+        if (x % 2 == 1) {
+            res := res + y
+        }
+        x := x / 2
+        y := y * 2
+    }
+
+    assert res == n * m
+}
+
+// O alta varianta pentru a calcula radacina patrata a unui numar intreg n
+//iteratii. n =5 , m=3    
+// x=5, y=3, res=0.   res + x*y = 0 + 5*3 = 15
+// x=2, y=6, res=3.   res + x*y = 3 + 2*6 = 15
+// x=1, y=12, res=3.  res + x*y = 3 + 1*12 = 15
+// x=0, y=24, res=15. res + x*y = 15 + 0*24 = 15

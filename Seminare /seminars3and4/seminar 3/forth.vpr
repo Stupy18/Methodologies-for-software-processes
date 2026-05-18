@@ -14,3 +14,14 @@ method int_sqrt_fast() {
         }
     assert res * res <= n && n <= (res + 1) * (res + 1)
 }
+
+// daca trecem prin cateva iteratii realizam ca
+// res = 0, x = 1
+// res = 1, x = 4
+// res = 2, x = 9
+// res = 3, x = 16     
+
+// (k+1)² = k² + 2k + 1
+// (res+2)² = (res+1)² + 2*(res+1) + 1
+//          = x + 2*res + 2 + 1
+//          = x + 2*res + 3            --- formula pentru a trece de la un patrat la urmatorul patrat

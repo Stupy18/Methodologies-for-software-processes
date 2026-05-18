@@ -1,0 +1,29 @@
+method d()
+{
+  var x: Int
+  var y: Bool
+
+  // SP0 = (x > 0)
+  assume x > 0
+  
+  // SP1 = (x > 0) && (x1 = x + 1)
+  x := x + 1
+  
+  if (y) {
+    var z: Int
+    x := x + z
+    // SP2a = (x > 0) && (x1 = x + 1) && (y = true) && (x2 = x1 + z)
+  } else {
+    x := 42
+    // SP2b = (x > 0) && (x1 = x + 1) && (y = false) && (x2 = 42)
+  }
+
+// Forward steps:
+//   After x := x+1:  x > 1 (i.e. x >= 2)
+//   In the ELSE branch:  x = 42  (concrete, predictable)
+//   In the  IF branch:  x = (x+1) + z  where z is UNCONSTRAINED (any Int)
+//                       → x can be ANY integer in this branch
+//
+// JOIN of both branches:  (x can be anything) ∨ (x = 42)  =  true
+  assert true
+}

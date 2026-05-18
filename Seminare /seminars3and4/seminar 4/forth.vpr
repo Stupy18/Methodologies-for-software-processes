@@ -12,6 +12,8 @@ domain Fib {
     }
 }
 
+// Every variable that changes in the loop and is used in the postcondition reasoning needs its own invariant.
+
 method iter_fib(n: Int) returns (res: Int)
     requires 0 <= n
     ensures res == fib(n)
@@ -30,3 +32,15 @@ method iter_fib(n: Int) returns (res: Int)
         i := i + 1
     }
 }
+
+// i=0: res=0 = fib(0)
+// i=1: res=1 = fib(1)
+// i=2: res=1 = fib(2)
+// i=3: res=2 = fib(3)
+// res == fib(i)
+
+
+// i=0: next=1 = fib(1)
+// i=1: next=1 = fib(2)
+// i=2: next=2 = fib(3)
+// i=3: next=3 = fib(4)
