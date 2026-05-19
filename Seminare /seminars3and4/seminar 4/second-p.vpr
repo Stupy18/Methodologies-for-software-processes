@@ -15,4 +15,4 @@ method M(n: Int) returns (r: Int)
 
 // n + 11 > 100?
 //   if n > 89:  yes -> n+11 is in [101..111], measure becomes 0
-//   if n ≤ 89:  no  -> measure becomes 101 - (n+11) = 90 - n
+//   if n ≤ 89:  no  -> measure becomes 101 - (n+11) 

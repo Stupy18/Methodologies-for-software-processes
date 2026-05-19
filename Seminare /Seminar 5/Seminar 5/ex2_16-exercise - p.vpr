@@ -1,0 +1,56 @@
+function foo(x: Int): Int {
+    x <= 0 ? 1 : foo(x - 2) + 3 
+}
+
+// In Viper, lemmas are declared by using the 'method' keyword
+method foo_properties(x: Int)
+    ensures foo(x) >= 1    //. base case
+    ensures x >= 1 ==> foo(x) >= x + 2 // inductive step
+{
+    if (x > 0) {
+        foo_properties(x - 2)
+    }
+}
+
+method client(r: Int)
+{
+    var s: Int := foo(r) 
+    foo_properties(r)
+     // gives solver: foo(r) >= 1
+    //               r >= 1 ==> foo(r) >= r+2
+    
+    var t: Int := foo(s) 
+    foo_properties(s) 
+    //  gives solver: foo(s) >= 1
+    //               s >= 1 ==> foo(s) >= s+2
+    
+    assert 2 <= t - s 
+    assert 2 <= t - r 
+    assert 3 <= t - r
+    assert 2 <= t - s
+        // s = foo(r) >= r + 2      (by property 2 on r)
+        // t = foo(s) >= s + 2      (by property 2 on s, since s >= r+2 >= 3 >= 1)
+        // t >= (r + 2) + 2 = r + 4
+        // t - r >= 4 >= 2   
+}
+
+
+
+// Iterations
+// foo(0)  = 1
+// foo(1)  = foo(-1) + 3 = 1 + 3 = 4. >= 1 + 2
+// foo(2)  = foo(0)  + 3 = 1 + 3 = 4 >= 2+2
+// foo(3)  = foo(1)  + 3 = 4 + 3 = 7 >= 3+2
+// foo(4)  = foo(2)  + 3 = 4 + 3 = 7. >= 4 + 2 
+// foo(5)  = foo(3)  + 3 = 7 + 3 = 10 >= 5 + 2
+// foo(6)  = foo(4)  + 3 = 7 + 3 = 10 >= 6 + 2
+// foo(7)  = foo(5)  + 3 = 10 + 3 = 13 >= 7 + 2
+// foo(8)  = foo(6)  + 3 = 10 + 3 = 13 >= 8 + 2
+
+
+
+// Natively in Viper, a method is a block of imperative code that can modify variables, read/write to a heap, and execute statements.
+// However, because SMT solvers (like Z3) are notoriously 
+// bad at automatically proving properties about recursive functions (
+//     like your foo), verification languages use a trick: they use a
+//      method to act as a mathematical Lemma (a proof).

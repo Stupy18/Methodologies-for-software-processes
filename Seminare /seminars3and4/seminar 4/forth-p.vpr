@@ -8,12 +8,12 @@ domain Fib {
         fib(1) == 1
     }
     axiom fib_rec {
+        // forall n: Int :: means "For every integer $n$ it holds that..."
         forall n: Int :: n >= 2 ==> fib(n) == fib(n-1) + fib(n-2)
     }
 }
 
-// Every variable that changes in the loop and is used in the postcondition reasoning needs its own invariant.
-
+// Every variable that changes in the loop and is used in the postcondition reasoning needs its own invariant. 
 method iter_fib(n: Int) returns (res: Int)
     requires 0 <= n
     ensures res == fib(n)

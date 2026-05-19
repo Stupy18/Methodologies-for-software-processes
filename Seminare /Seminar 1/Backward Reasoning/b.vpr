@@ -6,7 +6,7 @@ method b() {
     assume x + y > x * y + y * y
 
     x := x + y
-    // WP1 = (x + y > [x + y] * y)
+    // WP1 = (x + y > (x + y) * y)
 
     y := x * y
     // WP2 = (x > x * y)
@@ -16,6 +16,6 @@ method b() {
 }
 
 /*
-    WP1 = x + y > [x + y] * y
+    WP1 = x + y > (x + y) * y
         = x + y > xy + y^2
 */

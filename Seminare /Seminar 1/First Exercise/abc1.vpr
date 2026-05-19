@@ -1,6 +1,5 @@
 method maxSum(x: Int, y: Int) returns (sum: Int, max: Int)
   ensures sum == x + y
-  // this is to prevent the overachiever bug
   ensures max >= x && max >= y
   ensures max == x || max == y
 {

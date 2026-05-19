@@ -3,16 +3,13 @@ method a(x: Int, y: Int) returns (X:Int, Y: Int)
   ensures X == y && Y == x
 {
   X := y - x
-    // Take WP1 and substitute every instance of X with y - x
-    // WP0 = (y- y + x = x) = (x = x)
+    // WP0 = (y- y + x = x) = (x = x). assert true
 
 
   Y := y - X
-  // Take WP2 and substitute every instance of Y with y - X
-  // WP1 = (y - X + X = y) && (y - X = x) => (y = y always true so drop this) && (y - X = x)
+  // WP1 = (y - X + X = y) && (y - X = x) => (y = y always true) && (y - X = x)
 
   X := Y + X
-  // We take our goal (WP3) and substitute every instance of X with Y + X
   // WP2 = (Y + X = y) && (Y = x)
 }
 

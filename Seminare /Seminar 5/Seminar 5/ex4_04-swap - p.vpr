@@ -1,7 +1,7 @@
 field f: Int
 
 // In Viper, you can't just read or write a field — you must own it first. 
-// acc(a.f) means "full permission to field f on object a". Think of it like a key:
+// acc(a.f) means "full permission to field f on object a". Think of it like a key
 method swap(a: Ref, b: Ref)
   // 1. Require full permissions to both fields
   requires acc(a.f) && acc(b.f)

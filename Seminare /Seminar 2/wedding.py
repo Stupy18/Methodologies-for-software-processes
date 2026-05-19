@@ -1,17 +1,22 @@
 from z3 import *
 xal, xam, xar, xbl, xbm, xbr, xcl, xcm, xcr = Bools('xal xam xar xbl xbm xbr xcl xcm xcr')
 s = Solver()
+# xal, xam, xar,    Alice:   Left, Middle, Right
+# xbl, xbm, xbr,    Bob:     Left, Middle, Right
+# xcl, xcm, xcr     Charlie: Left, Middle, Right
+
 
 # Alice does not sit next to Charlie
-s.add( And( Implies( Or(xal, xar), Not(xcm) ), Implies( xam, And( Not(xcl), Not(xcr)))))
+s.add( And( Implies( Or(xal, xar), Not(xcm) ), # if Alice is Left or Right, Charlie not Middle
+            Implies( xam, And( Not(xcl), Not(xcr))))) # if Alice is Middle, Charlie not Left or Right
 
 # Alice does not sit on the leftmost chair
-s.add( Not(xal) )
+s.add( Not(xal) )   # xal must be False
 
 # Bob does not sit to the right of Charlie
 s.add(And(
-    Implies(xcl, And(Not(xbm), Not(xbr))),
-    Implies(xcm, Not(xbr))
+    Implies(xcl, And(Not(xbm), Not(xbr))), # Charlie=Left -> Bob can't be Middle or Right
+    Implies(xcm, Not(xbr))       # Charlie=Middle -> Bob can't be Right
 ))
 
 # Each person gets at least one chair

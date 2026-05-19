@@ -8,7 +8,7 @@ method sum(n: Int) returns (r: Int)
     } else {
         var prev: Int
         prev := sum(n - 1)
-        r := n + prev
+        r := prev + n
     }
 }
 
