@@ -25,8 +25,7 @@ method client1()
   
   // "Create" objects by inhaling permissions to their fields
   // inhale means "assume this fact/permission is true" without proving it.
-  //  It's how you create objects in Viper without a full allocation model. 
-  //  Think of it as saying "trust me, bro":
+  //"trust me, bro":
 
   inhale acc(x.f)
   inhale acc(y.f)
@@ -46,10 +45,13 @@ method client1()
 // {
 //   var z: Ref
 //   inhale acc(z.f)
+//   // inhale acc(z.f) 
 
 //   z.f := 99
 
 //   // VERIFICATION FAILS HERE!
 //   // Viper will complain: "Might not have enough permissions to execute swap(z, z)"
 //   swap(z, z) 
+//   assert z.f == 99
+//   assert z.f == 99
 // }

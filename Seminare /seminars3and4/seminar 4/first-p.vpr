@@ -18,18 +18,9 @@ method main() {
     assert r == 55
 }
 
-// The decreases n Clause
-// This proves the recursion terminates. Viper checks:
-
 // n is a non-negative integer (from requires n >= 0)
 // each recursive call uses n - 1, which is strictly smaller
 // so n must eventually reach 0 and stop
 
 
 // Gauss sum formula: 1 + 2 + ... + n = n * (n + 1) / 2
-// n >= 0 so decreases n is satisfied.
-//  The recursion will eventually reach the base case n = 0,
-//   where it will return 0. For n > 0, it will call sum(n - 1) 
-//   which will compute the sum of the first n - 1 integers, and then add n to that 
-//   result to get the sum of the first n integers. The ensures clause guarantees that the f
-//   inal result will be equal to n * (n + 1) / 2, which is the formula for the sum of the first n integers.

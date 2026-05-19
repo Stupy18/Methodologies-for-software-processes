@@ -4,7 +4,6 @@ field bal: Int
 // simulate object creation by returning a reference and granting the caller full permissions to the fields
 // + initial balance of 0
 // postconditions: give the caller access and guarantee balance of 0
-// In Viper, you can't just read or write a field — you must own it first. acc(a.f) means "full permission to field f on object a
 method create() returns (res: Ref)
   ensures acc(res.bal)
   ensures res.bal == 0

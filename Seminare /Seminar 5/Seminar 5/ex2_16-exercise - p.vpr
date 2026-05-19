@@ -24,6 +24,7 @@ method client(r: Int)
     //               s >= 1 ==> foo(s) >= s+2
     
     assert 2 <= t - s 
+    // assert 3 <= t-s 
     assert 2 <= t - r 
     assert 3 <= t - r
     assert 2 <= t - s
