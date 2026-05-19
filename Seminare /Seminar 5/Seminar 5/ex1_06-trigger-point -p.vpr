@@ -31,7 +31,7 @@ domain Point {
    //       && second(add(p,q)) == second(p) + second(q)
    // }
 // { first(p), first(q) } loops because:
-//     the axiom OUTPUT contains first(...)
+//     the axiom output contains first(...)
 //     which matches its own TRIGGER first fires itself forever
 
 }

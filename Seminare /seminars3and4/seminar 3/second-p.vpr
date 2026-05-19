@@ -33,7 +33,6 @@ method main() {
     assert res == n * m
 }
 
-// O alta varianta pentru a calcula radacina patrata unui numar intreg n
 //iteratii. n=5 , m=3    
 // x=5, y=3, res=0.   res + x*y = 0 + 5*3 = 15
 // x=2, y=6, res=3.   res + x*y = 3 + 2*6 = 15

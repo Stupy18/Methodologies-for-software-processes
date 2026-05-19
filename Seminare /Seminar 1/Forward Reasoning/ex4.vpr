@@ -21,8 +21,9 @@ method d()
 //   After x := x+1:  x > 1 (i.e. x >= 2)
 //   In the ELSE branch:  x = 42
 //   In the  IF branch:  x = (x+1) + z  where z is Unconstrained (any Int)
-//                       → x can be ANY integer in this branch
+//                       → x can be Any integer in this branch
 //
-// JOIN of both branches:  (x can be anything) U (x = 42)  =  true
+  assert x == 42 || y
+  assert !y ==> x == 42 
   assert true
 }

@@ -2,7 +2,6 @@ function foo(x: Int): Int {
     x <= 0 ? 1 : foo(x - 2) + 3 
 }
 
-// In Viper, lemmas are declared by using the 'method' keyword
 method foo_properties(x: Int)
     ensures foo(x) >= 1    //. base case
     ensures x >= 1 ==> foo(x) >= x + 2 // inductive step

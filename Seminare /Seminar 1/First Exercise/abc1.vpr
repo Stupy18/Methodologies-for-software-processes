@@ -23,11 +23,14 @@ method testMaxSum()
   assert s == 1765
   assert m == 1723
 }
-// because the contract is extremely precise, we don't need to modify it
-// so a test method can be ran on an unimplemented method
-// we just needed a solid contract...
+
 
 // Implementation for d, e and f
+
+//abstract reconstructMaxSum
+method abstractreconstructMaxSum(sum:Int , max:Int) returns (x: Int, y: Int)
+  ensures (x == max && y == sum - max) || (y == max && x == sum - max)
+
 
 method reconstructMaxSum(sum: Int, max: Int) returns (x: Int, y: Int)
   ensures (x == max && y == sum - max) || (y == max && x == sum - max)

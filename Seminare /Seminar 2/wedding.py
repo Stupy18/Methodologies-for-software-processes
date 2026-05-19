@@ -9,7 +9,7 @@ s = Solver()
 # Alice does not sit next to Charlie
 s.add( And( Implies( Or(xal, xar), Not(xcm) ), # if Alice is Left or Right, Charlie not Middle
             Implies( xam, And( Not(xcl), Not(xcr))))) # if Alice is Middle, Charlie not Left or Right
-
+#Implies = if ... then ...
 # Alice does not sit on the leftmost chair
 s.add( Not(xal) )   # xal must be False
 
